@@ -2,8 +2,6 @@
 
 A production-grade, highly extensible Laravel backend service that aggregates flight schedules concurrently from multiple disparate third-party providers, filters duplicates by best-fare matrix operations, and exposes clean RESTful booking pipelines.
 
----
-
 ## Architectural Highlights & Patterns
 
 - **Action/Domain Pattern:** Keeps controllers ultra-thin by isolating single business capabilities into standalone orchestrators (`SearchFlightsAction`, `CreateBookingAction`).
@@ -12,7 +10,6 @@ A production-grade, highly extensible Laravel backend service that aggregates fl
 - **Deduplication Engine:** Evaluates duplicates across vendors on the fly using composite identifier signatures (`Carrier-FlightNo-DepartureTime`) and preserves only the cheapest option.
 - **In-Memory Mock Orchestration:** Bypasses PHP single-threaded local development deadlocks (cURL timeout 28) by using abstract loop hooks while preserving an identical architectural pipeline for live HTTP client pooling.
 
----
 
 ## System Requirements
 
@@ -21,7 +18,6 @@ A production-grade, highly extensible Laravel backend service that aggregates fl
 - **Extensions required:** `openssl`, `pdo`, `mbstring`, `tokenizer`, `xml`, `ctype`, `json`
 - **Database Engine:** SQLite (Default for lightweight portable setups)
 
----
 
 ## Installation & Setup Guide
 
@@ -84,7 +80,6 @@ The application will boot up at http://127.0.0.1:8000.
 | `passengers` | `2` | Number of seats multiplier (Optional) |
 | `sort_by` | `price` | Sort index (`price` or `duration`, Optional) |
 
----
 
 ### full url
 
@@ -92,7 +87,91 @@ The application will boot up at http://127.0.0.1:8000.
 http://127.0.0.1:8000/api/v1/flights/search?from=DAC&to=DXB&date=2026-07-01&passengers=2&sort_by=price
 ```
 
-* **Expected Output:** Returns a sorted list of deduplicated flights. Copy the `id` string (Base64 token) from any flight object to perform a booking test.
+* **Expected Output:** 
+
+```json
+{
+    "metadata": {
+        "provider_completeness": {
+            "ProviderAService": {
+                "status": "success",
+                "code": 200
+            },
+            "ProviderBService": {
+                "status": "success",
+                "code": 200
+            },
+            "ProviderCService": {
+                "status": "success",
+                "code": 200
+            }
+        },
+        "total_results": 4
+    },
+    "data": [
+        {
+            "id": "eyJzaWciOiJBQS1BQTIwNS0yMDI2MDcwMTIyMTAiLCJwcnYiOiJQcm92aWRlckFTZXJ2aWNlIiwidmFsIjoyODB9",
+            "carrier": "AA",
+            "flight_number": "AA205",
+            "origin": "DAC",
+            "destination": "DXB",
+            "departure_time": "2026-07-01T22:10:00+00:00",
+            "arrival_time": "2026-07-02T02:40:00+00:00",
+            "duration_minutes": 270,
+            "stops": 0,
+            "price": {
+                "amount": 560,
+                "currency": "USD"
+            }
+        },
+        {
+            "id": "eyJzaWciOiJCUy1CUzIyMC0yMDI2MDcwMTA5MTUiLCJwcnYiOiJQcm92aWRlckFTZXJ2aWNlIiwidmFsIjozMTB9",
+            "carrier": "BS",
+            "flight_number": "BS220",
+            "origin": "DAC",
+            "destination": "DXB",
+            "departure_time": "2026-07-01T09:15:00+00:00",
+            "arrival_time": "2026-07-01T15:00:00+00:00",
+            "duration_minutes": 345,
+            "stops": 1,
+            "price": {
+                "amount": 620,
+                "currency": "USD"
+            }
+        },
+        {
+            "id": "eyJzaWciOiJBQS1BQTEwMS0yMDI2MDcwMTA4MDAiLCJwcnYiOiJQcm92aWRlckFTZXJ2aWNlIiwidmFsIjozMjB9",
+            "carrier": "AA",
+            "flight_number": "AA101",
+            "origin": "DAC",
+            "destination": "DXB",
+            "departure_time": "2026-07-01T08:00:00+00:00",
+            "arrival_time": "2026-07-01T12:30:00+00:00",
+            "duration_minutes": 270,
+            "stops": 0,
+            "price": {
+                "amount": 640,
+                "currency": "USD"
+            }
+        },
+        {
+            "id": "eyJzaWciOiJFSy1FSzU4NS0yMDI2MDcwMTAzNDUiLCJwcnYiOiJQcm92aWRlckFTZXJ2aWNlIiwidmFsIjo0MTB9",
+            "carrier": "EK",
+            "flight_number": "EK585",
+            "origin": "DAC",
+            "destination": "DXB",
+            "departure_time": "2026-07-01T03:45:00+00:00",
+            "arrival_time": "2026-07-01T06:50:00+00:00",
+            "duration_minutes": 185,
+            "stops": 0,
+            "price": {
+                "amount": 820,
+                "currency": "USD"
+            }
+        }
+    ]
+}
+```
 
 ## 2. Confirm a Flight Booking
 
@@ -114,9 +193,59 @@ http://127.0.0.1:8000/api/v1/flights/search?from=DAC&to=DXB&date=2026-07-01&pass
   ]
 }
 ```
+Expected Output
+```json
+{
+    "data": {
+        "reference": "IBXRNIIYBCI",
+        "flight_signature": "EK-EK585-202607010345",
+        "provider": "ProviderAService",
+        "total_fare_usd": 820,
+        "passengers": [
+            {
+                "first_name": "Ahammed",
+                "last_name": "Imtiaze",
+                "passport_number": "BG1234567"
+            },
+            {
+                "first_name": "Rahat",
+                "last_name": "Khan",
+                "passport_number": "BG7654321"
+            }
+        ],
+        "created_at": "2026-06-28T17:01:31+00:00"
+    },
+    "message": "Booking confirmed successfully."
+}
+```
 
+## 3. Retrieve Booking Records
 
-### Formatting Details:
-* **JSON Syntax Highlighting:** Enclosed the request body inside a proper Markdown code block marked with `json` to ensure clean syntax color rendering in MkDocs.
-* **Inline Code Badges:** Captured response statuses (`201 Created`), field references (`reference`), and HTTP methods (`GET`) in backticks (` ` `).
-* **Dynamic URL Paths:** Kept the placeholder `{YOUR_GENERATED_REFERENCE}` inside the inline URL code block to maintain clarity for technical documentation.
+* **Method:** `GET`
+* **URL:** `http://127.0.0.1:8000/api/v1/bookings/{YOUR_GENERATED_REFERENCE}`
+
+Expected Output:
+
+```json
+{
+    "data": {
+        "reference": "IBXAPBI8KXI",
+        "flight_signature": "flight_key",
+        "provider": "proivder_booked",
+        "total_fare_usd": 100,
+        "passengers": [
+            {
+                "first_name": "Ahammed",
+                "last_name": "Imtiaze",
+                "passport_number": "BG1234567"
+            },
+            {
+                "first_name": "Rahat",
+                "last_name": "Khan",
+                "passport_number": "BG7654321"
+            }
+        ],
+        "created_at": "2026-06-28T06:29:00+00:00"
+    }
+}
+```
