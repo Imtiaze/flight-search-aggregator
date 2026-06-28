@@ -13,7 +13,7 @@ class ProviderDService implements FlightProviderInterface
 {
     public function getName(): string
     {
-        return 'ProviderCService';
+        return 'ProviderDService';
     }
 
     public function fetchFlights(SearchCriteria $criteria): array
