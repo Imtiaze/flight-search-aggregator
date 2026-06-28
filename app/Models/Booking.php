@@ -13,4 +13,9 @@ class Booking extends Model
         'amount_paid',
         'passenger_details'
     ];
+
+    protected $casts = [ 
+        'passenger_details' => 'array', 
+        'amount_paid' => 'float' 
+    ];
 }

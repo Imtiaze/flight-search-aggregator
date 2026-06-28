@@ -2,20 +2,22 @@
 
 namespace App\Actions;
 
-use App\Models\Booking;
+use App\Support\FlightIdGenerator;
 use Illuminate\Support\Str;
+use App\Models\Booking;
 
 class CreateBookingAction
 {
     public function execute(string $flightId, array $passengers): Booking
     {
-        //TODO::upate later with real info
+        $flightDetails = FlightIdGenerator::decode($flightId);
+        
         return Booking::create([
             'reference' => 'IBX' . strtoupper(Str::random(8)),
-            'flight_key' => 'flight_key',
-            'provider_booked' => 'proivder_booked',
-            'amount_paid' => 100,
-            'passenger_details' => json_encode($passengers),
+            'flight_key' => $flightDetails['sig'],
+            'provider_booked' => $flightDetails['prv'],
+            'amount_paid' => $flightDetails['val'] * count($passengers),
+            'passenger_details' => $passengers,
         ]);
     }
 }

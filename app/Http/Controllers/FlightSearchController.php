@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\SearchFlightsAction;
-use App\DataTransferObj\SearchCriteria;
 use App\Http\Requests\SearchFlightRequest;
+use App\DataTransferObj\SearchCriteria;
 use App\Http\Resources\FlightResource;
+use App\Actions\SearchFlightsAction;
 
 class FlightSearchController extends Controller
 {

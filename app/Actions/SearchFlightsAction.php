@@ -3,9 +3,11 @@
 namespace App\Actions;
 
 use App\DataTransferObj\SearchCriteria;
-use App\Services\FlightAggregator;
-use App\Services\FlightDeduplicator;
-use App\Services\FlightSorter;
+use App\Services\{
+    FlightDeduplicator,
+    FlightAggregator,
+    FlightSorter
+};
 
 class SearchFlightsAction 
 {
@@ -17,12 +19,13 @@ class SearchFlightsAction
 
     public function execute(SearchCriteria $criteria, array $filters, string $sortBy, string $sortDirection): array
     {
+        // Get the flights
         $aggregationResults = $this->aggregator->aggregate($criteria);
 
+        // Check for duplications
         $uniqueFlights = $this->deduplicator->deduplicate($aggregationResults['flights']);
 
         $collection = collect($uniqueFlights);
-
 
         if (isset($filters['max_stops'])) {
             $collection = $collection->where('stops', '<=', (int) $filters['max_stops']);
@@ -41,6 +44,5 @@ class SearchFlightsAction
                 'total_results' => $sortedCollection->count()
             ]
         ];
-
     }
 }

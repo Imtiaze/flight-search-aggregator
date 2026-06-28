@@ -3,9 +3,10 @@
 namespace App\FlightProviders;
 
 use App\Contracts\FlightProviderInterface;
-use App\DataTransferObj\FlightDTO;
-use App\DataTransferObj\SearchCriteria;
-use Illuminate\Http\Client\Pool;
+use App\DataTransferObj\{
+    SearchCriteria,
+    FlightDTO
+};
 use Carbon\Carbon;
 
 class ProviderBService implements FlightProviderInterface
@@ -13,11 +14,6 @@ class ProviderBService implements FlightProviderInterface
     public function getName(): string
     {
         return 'ProviderBService';
-    }
-
-    public function buildPoolRequest(Pool $pool, SearchCriteria $criteria)
-    {
-        
     }
 
     public function fetchFlights(SearchCriteria $criteria): array

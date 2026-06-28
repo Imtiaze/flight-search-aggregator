@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Resources\Json\JsonResource;
 use App\Support\FlightIdGenerator;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class FlightResource extends JsonResource
 {
